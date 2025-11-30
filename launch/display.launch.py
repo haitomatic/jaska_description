@@ -9,8 +9,10 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration, Command
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -29,8 +31,9 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time', default='false')
     use_gui = LaunchConfiguration('use_gui', default='true')
     
-    # Robot description
-    robot_description = Command(['xacro ', xacro_file])
+    # Robot description - wrap Command in ParameterValue with type string
+    robot_description_content = Command(['xacro ', xacro_file])
+    robot_description = ParameterValue(robot_description_content, value_type=str)
     
     # Robot state publisher node
     robot_state_publisher_node = Node(
@@ -46,12 +49,27 @@ def generate_launch_description():
         ]
     )
     
-    # Joint state publisher GUI node
+    # Joint state publisher GUI node (only if use_gui=true)
     joint_state_publisher_gui_node = Node(
         package='joint_state_publisher_gui',
         executable='joint_state_publisher_gui',
         name='joint_state_publisher_gui',
         output='screen',
+        condition=IfCondition(use_gui),
+        parameters=[
+            {
+                'use_sim_time': use_sim_time
+            }
+        ]
+    )
+    
+    # Joint state publisher node (only if use_gui=false)
+    joint_state_publisher_node = Node(
+        package='joint_state_publisher',
+        executable='joint_state_publisher',
+        name='joint_state_publisher',
+        output='screen',
+        condition=UnlessCondition(use_gui),
         parameters=[
             {
                 'use_sim_time': use_sim_time
@@ -82,9 +100,10 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'use_gui',
             default_value='true',
-            description='Start joint_state_publisher_gui'),
+            description='Start joint_state_publisher_gui (true) or joint_state_publisher (false)'),
         
         robot_state_publisher_node,
         joint_state_publisher_gui_node,
+        joint_state_publisher_node,
         rviz2_node,
     ])

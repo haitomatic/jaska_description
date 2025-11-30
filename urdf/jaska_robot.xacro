@@ -37,10 +37,7 @@
     <xacro:property name="trunk_mesh_rpy" value="${M_PI/2} 0 0" />
     <xacro:property name="rocker_mesh_rpy" value="${M_PI/2} 0 ${M_PI}" />
     <xacro:property name="bogie_mesh_rpy" value="${M_PI/2} 0 0" />
-    <xacro:property name="wheel_mesh_rpy" value="0 0 0" />
-    <xacro:property name="sensor_mount_mesh_rpy" value="0 0 0" />
-    <xacro:property name="lidar_mesh_rpy" value="0 0 0" />
-    <xacro:property name="camera_mesh_rpy" value="0 0 0" />
+    <xacro:property name="wheel_mesh_rpy" value="${M_PI/2} 0 0" />
 
     <!-- Mesh scale adjustments (typically 0.001 for mm to meters conversion) -->
     <xacro:property name="trunk_mesh_scale" value="0.09 0.09 0.09" />
@@ -242,7 +239,7 @@
         <!-- Wheel Link -->
         <link name="${wheel_prefix}_wheel">
             <visual>
-                <origin xyz="0 0 0" rpy="${M_PI/2} 0 ${wheel_mesh_rpy}"/>
+                <origin xyz="0 0 0" rpy="${wheel_mesh_rpy}"/>
                 <geometry>
                     <mesh filename="package://jaska_description/meshes/wheel.stl" scale="${wheel_mesh_scale}"/>
                 </geometry>
@@ -335,7 +332,7 @@
         wheel_prefix="rear_right"
         parent_link="right_bogie"
         wheel_offset_x="${-bogie_length/2 - 0.050}"
-        wheel_offset_y="-0.050"
+        wheel_offset_y="-0.060"
         wheel_offset_z="-0.110" />
 
     <!-- Differential drive constraint: synchronize left and right wheels -->
@@ -348,7 +345,7 @@
     <!-- Sensor Mount Base (using actual STL mesh) -->
     <link name="sensor_mount_base">
         <visual>
-            <origin xyz="0 0 0" rpy="${sensor_mount_mesh_rpy}" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="package://jaska_description/meshes/lidar_and_camera_mount.stl" scale="${sensor_mount_mesh_scale}"/>
             </geometry>
@@ -385,7 +382,7 @@
     <!-- Unitree L2 Lidar Link (actual sensor) -->
     <link name="unitree_lidar_link">
         <visual>
-            <origin xyz="-0.037 -0.037 -0.025" rpy="${lidar_mesh_rpy}" />
+            <origin xyz="-0.037 -0.037 -0.025" rpy="0 0 0" />
             <geometry>
                 <!-- Use actual Unitree L2 mesh from local meshes directory -->
                 <mesh filename="package://jaska_description/meshes/unitree_l2.stl" scale="${lidar_mesh_scale}"/>
@@ -441,7 +438,7 @@
     <!-- Camera Center -->
     <link name="zed_camera_center">
         <visual>
-            <origin xyz="0 0 0" rpy="${camera_mesh_rpy}"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
                 <mesh filename="package://jaska_description/meshes/zedx.stl" scale="${camera_mesh_scale}"/>
             </geometry>
