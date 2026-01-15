@@ -1,0 +1,21 @@
+[package]
+# Extension metadata
+version = "0.1.0"
+title = "Jaska Viewport Setup"
+description = "Automatically configures dual viewport layout for Jaska robot development"
+authors = ["Jaska Team"]
+category = "Viewport"
+keywords = ["viewport", "camera", "layout", "jaska"]
+
+# Dependencies
+[dependencies]
+"omni.kit.viewport.utility" = {}
+"omni.isaac.core" = {}
+
+# Python module configuration
+[[python.module]]
+name = "jaska.viewport.setup"
+
+# Auto-enable on startup
+[settings]
+exts."jaska.viewport.setup".autoEnable = true

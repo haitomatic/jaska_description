@@ -241,6 +241,38 @@ The robot description is compatible with the ZED ROS2 wrapper. The camera frames
 
 The lidar frame `unitree_lidar_link` and `unitree_lidar_optical_frame` are ready for integration with the Unitree L2 lidar ROS2 driver.
 
+### Gazebo Simulation
+
+The Unitree L2 lidar includes a Gazebo `gpu_lidar` sensor plugin for 3D point cloud simulation:
+
+**Specifications:**
+- **Type**: 3D GPU-accelerated lidar
+- **Range**: 0.1m to 30m (Unitree L2 spec)
+- **Horizontal FOV**: 360° (1800 samples)
+- **Vertical FOV**: 96° total (-6° to +90°, asymmetric dome)
+  - Upward: 90° (dome-shaped coverage above)
+  - Downward: 6° (slight coverage below horizon)
+- **Vertical beams**: 32 scan lines
+- **Update rate**: 10 Hz
+- **Topic**: `/lidar/points` (sensor_msgs/PointCloud2)
+- **Frame**: `unitree_lidar_optical_frame`
+- **Noise**: Gaussian (mean: 0.0, stddev: 0.01)
+
+**To visualize in Gazebo:**
+```bash
+ros2 launch jaska_gazebo_sim jaska_empty_world.launch.py
+```
+
+**To subscribe to point cloud data:**
+```bash
+ros2 topic echo /lidar/points
+```
+
+**To visualize in RViz2:**
+1. Add → PointCloud2
+2. Topic: `/lidar/points`
+3. Fixed Frame: `base_footprint` or `unitree_lidar_optical_frame`
+
 ## Customization
 
 ### Physical Measurement Parameters
@@ -454,6 +486,31 @@ Place your STL files in the `meshes/` directory and reference them:
 - `joint_state_publisher_gui`
 - `xacro`
 - `rviz2`
+
+## Isaac Sim Integration
+
+The Jaska robot can be imported into NVIDIA Isaac Sim for high-f###idelity physics simulation and RTX sensor simulation. USD (Universal Scene Description) assets are stored in the `usd/` directory.
+
+### Quick Start
+
+1. **Process xacro to URDF:**
+   ```bash
+   xacro urdf/jaska_robot.xacro > urdf/jaska_robot.urdf
+   ```
+
+2. **Convert to USD** using Isaac Sim's URDF Importer (GUI or Python)
+
+3. **Load in Isaac Sim:**
+   ```python
+   from omni.isaac.core.utils.stage import add_reference_to_stage
+
+   add_reference_to_stage(
+       usd_path="package://jaska_description/usd/jaska_robot.usd",
+       prim_path="/World/Jaska"
+   )
+   ```
+
+**For detailed conversion instructions, usage examples, and ROS2 bridge integration, see [`usd/README.md`](usd/README.md).**
 
 ## License
 

@@ -1,0 +1,14 @@
+# Generated URDF from xacro (temporary file for Isaac Sim)
+urdf/*.urdf
+
+# USD Cache and temporary files
+usd/*.usda.backup
+usd/*.usd.backup
+usd/*_collision_mesh_*
+usd/__pycache__/
+usd/*.tmp
+
+# Build artifacts
+build/
+install/
+log/
