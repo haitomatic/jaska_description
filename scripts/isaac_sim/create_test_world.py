@@ -19,6 +19,20 @@ def create_test_world():
     
     stage = get_current_stage()
     
+    # Create physics scene (required for sensors and physics simulation)
+    scene = UsdPhysics.Scene.Define(stage, "/World/PhysicsScene")
+    scene.CreateGravityDirectionAttr().Set(Gf.Vec3f(0.0, 0.0, -1.0))
+    scene.CreateGravityMagnitudeAttr().Set(9.81)
+    
+    # Optimization: Use CPU solver (more efficient for robots)
+    # Disable GPU dynamics and use MBP broadphase
+    from pxr import PhysxSchema
+    physx_scene = PhysxSchema.PhysxSceneAPI.Apply(scene.GetPrim())
+    physx_scene.CreateEnableGPUDynamicsAttr().Set(False)
+    physx_scene.CreateBroadphaseTypeAttr().Set("MBP")  # Multi Box Pruning
+    
+    print("✓ Physics scene created (CPU solver, MBP broadphase)")
+    
     # Create ground plane
     print("Creating ground plane...")
     ground = create_prim(
@@ -39,10 +53,10 @@ def create_test_world():
     
     # Create cubes
     positions_cubes = [
-        [-2.0, -2.0, 0.25],
-        [-1.0, -2.0, 0.25],
-        [0.0, -2.0, 0.25],
-        [1.0, -2.0, 0.25],
+        [-2.2, -2.0, 0.5],
+        [-0.8, -2.0, 0.5],
+        [0.6, -2.0, 0.5],
+        [2.0, -2.0, 0.5],
     ]
     
     for i, pos in enumerate(positions_cubes):
@@ -79,8 +93,8 @@ def create_test_world():
     
     # Create cylinders
     positions_cylinders = [
-        [2.0, -2.0, 0.3],
-        [3.0, -2.0, 0.3],
+        [2.5, -1.0, 0.3],
+        [3.5, -1.5, 0.3],
     ]
     
     for i, pos in enumerate(positions_cylinders):
