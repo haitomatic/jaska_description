@@ -157,7 +157,7 @@ def create_test_world():
             if jaska_prim:
                 xform = UsdGeom.Xformable(jaska_prim)
                 xform.ClearXformOpOrder()
-                xform.AddTranslateOp().Set(Gf.Vec3d(0, 0, 0.6))  # Lift 30cm above ground
+                xform.AddTranslateOp().Set(Gf.Vec3d(0, 0, 0.4))
             
             print(f"✓ Jaska robot loaded at: {jaska_prim_path}")
         except Exception as e:

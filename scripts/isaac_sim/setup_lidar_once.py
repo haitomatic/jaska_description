@@ -8,6 +8,7 @@ After that, the lidar will be automatically configured every time you load the r
 
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.sensor import RotatingLidarPhysX
+from pxr import UsdGeom, Gf
 
 
 def setup_lidar_permanently():
