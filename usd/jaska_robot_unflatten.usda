@@ -1,0 +1,517 @@
+#usda 1.0
+(
+    customLayerData = {
+        dictionary cameraSettings = {
+            dictionary Front = {
+                double3 position = (5, 0, 0)
+                double radius = 5
+            }
+            dictionary Perspective = {
+                double3 position = (1.72737973963092, -1.4002476930719419, 1.0268482568629353)
+                double3 target = (-2.4584416258579784, 4.044135251451008, -3.622549077840631)
+            }
+            dictionary Right = {
+                double3 position = (0, -5, 0)
+                double radius = 5
+            }
+            dictionary Top = {
+                double3 position = (0, 0, 5)
+                double radius = 5
+            }
+            string boundCamera = "/jaska_robot/zed_camera_link/base_link/ZED_X/CameraLeft"
+        }
+        dictionary omni_layer = {
+            string authoring_layer = "./jaska_robot.usd"
+        }
+        dictionary renderSettings = {
+        }
+    }
+    defaultPrim = "jaska_robot"
+    endTimeCode = 400000
+    metersPerUnit = 1
+    timeCodesPerSecond = 60
+    upAxis = "Z"
+)
+
+def Xform "jaska_robot" (
+    variants = {
+        string Physics = "PhysX"
+        string Robot = "Robot"
+        string Sensor = "Sensors"
+    }
+    prepend variantSets = ["Physics", "Sensor", "Robot"]
+)
+{
+    string isaac:namespace (
+        displayName = "Namespace"
+        doc = "Namespace of the prim in Isaac Sim"
+    )
+
+    over "zed_camera_center" (
+        active = false
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        token visibility = "invisible"
+    }
+
+    over "ZED_X" (
+        delete apiSchemas = ["PhysicsRigidBodyAPI", "PhysxRigidBodyAPI"]
+    )
+    {
+        double3 xformOp:rotateZYX = (0, 0, 0)
+        double3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0.49426593405114017, 0.0037416332679476453, 0.0255)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZYX", "xformOp:scale"]
+    }
+
+    over "unitree_lidar_link" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        rel material:binding = </jaska_robot/Looks/Lidar> (
+            bindMaterialAs = "strongerThanDescendants"
+        )
+        bool physics:kinematicEnabled = 0
+        bool physics:rigidBodyEnabled = 1
+        float rotationRate = 10
+        quatd xformOp:orient = (1, 0, 0, 0)
+        double3 xformOp:translate = (0.4625304341316223, 0.0020000040531158447, 0.1633884310722351)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        over "unilidar_lidar" (
+            active = false
+        )
+        {
+            token visibility = "inherited"
+        }
+
+        over "visuals" (
+            prepend apiSchemas = ["MaterialBindingAPI"]
+            instanceable = false
+        )
+        {
+            rel material:binding = None (
+                bindMaterialAs = "weakerThanDescendants"
+            )
+        }
+
+        def Lidar "Rotary_lidar"
+        {
+            bool drawLines = 1
+            bool drawPoints = 1
+            bool enabled = 1
+            bool highLod = 1
+            float horizontalFov = 360
+            float horizontalResolution = 0.64
+            float maxRange = 30
+            float minRange = 0.05
+            float rotationRate = 5.55
+            float verticalFov = 90
+            float verticalResolution = 1
+            quatd xformOp:orient = (1, 0, 0, 0)
+            double3 xformOp:scale = (1, 1, 1)
+            double3 xformOp:translate = (0, 0, 0)
+            uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+        }
+    }
+
+    over "base_link" (
+        prepend apiSchemas = ["MaterialBindingAPI", "PhysicsArticulationRootAPI", "PhysxArticulationAPI"]
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        rel material:binding = </jaska_robot/Looks/Body> (
+            bindMaterialAs = "strongerThanDescendants"
+        )
+    }
+
+    over "left_rocker"
+    {
+    }
+
+    over "front_left_wheel" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        rel material:binding = </jaska_robot/Looks/Wheel> (
+            bindMaterialAs = "strongerThanDescendants"
+        )
+    }
+
+    over "left_bogie"
+    {
+    }
+
+    over "middle_left_wheel" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        rel material:binding = </jaska_robot/Looks/Wheel> (
+            bindMaterialAs = "strongerThanDescendants"
+        )
+    }
+
+    over "rear_left_wheel" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        rel material:binding = </jaska_robot/Looks/Wheel> (
+            bindMaterialAs = "strongerThanDescendants"
+        )
+    }
+
+    over "right_rocker"
+    {
+    }
+
+    over "front_right_wheel" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        rel material:binding = </jaska_robot/Looks/Wheel> (
+            bindMaterialAs = "strongerThanDescendants"
+        )
+    }
+
+    over "right_bogie"
+    {
+    }
+
+    over "middle_right_wheel" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        rel material:binding = </jaska_robot/Looks/Wheel> (
+            bindMaterialAs = "strongerThanDescendants"
+        )
+    }
+
+    over "rear_right_wheel" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+        rel material:binding = </jaska_robot/Looks/Wheel> (
+            bindMaterialAs = "strongerThanDescendants"
+        )
+    }
+
+    over "sensor_mount_base"
+    {
+        string isaac:nameOverride (
+            displayName = "Name Override"
+            doc = "Name override for prim lookup in base name search"
+        )
+
+        over "zed_camera_link" (
+            active = false
+        )
+        {
+        }
+    }
+
+    over "joints"
+    {
+        over "left_rocker_joint"
+        {
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        over "right_rocker_joint"
+        {
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        over "left_bogie_joint"
+        {
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        over "right_bogie_joint"
+        {
+            float state:angular:physics:position = 0
+            float state:angular:physics:velocity = 0
+        }
+
+        over "unitree_lidar_joint"
+        {
+            string isaac:nameOverride (
+                displayName = "Name Override"
+                doc = "Name override for prim lookup in base name search"
+            )
+        }
+
+        over "zed_camera_center_joint"
+        {
+            string isaac:nameOverride (
+                displayName = "Name Override"
+                doc = "Name override for prim lookup in base name search"
+            )
+            rel physics:body1 = </jaska_robot/zed_camera_link>
+            point3f physics:localPos1 = (-0.0005655901, 0.0022583671, 0.000502637)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+    }
+
+    over "zed_camera_link"
+    {
+        bool physics:kinematicEnabled = 0
+        bool physics:rigidBodyEnabled = 1
+        bool physxRigidBody:disableGravity = 1
+        double3 xformOp:rotateZYX = (0, 0, 0)
+        double3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0.4949159340511402, -0.00025836673205245717, 0.024999999999999998)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:rotateZYX", "xformOp:scale"]
+
+        over "base_link"
+        {
+            over "ZED_X"
+            {
+                over "CameraLeft"
+                {
+                    custom uniform vector3d omni:kit:centerOfInterest = (0, 0, -33.226449669124584)
+                    quatd xformOp:orient = (-1.6081226496766364e-16, 6.62912745147056e-17, 0.7071067811865475, 0.7071067811865476)
+                    double3 xformOp:scale = (1, 1, 1)
+                    double3 xformOp:translate = (3.914334144159187, 5.211449669124581, 1.4937165583228225)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                }
+            }
+        }
+    }
+
+    over "Looks"
+    {
+        def Material "Lidar"
+        {
+            token outputs:mdl:displacement.connect = </jaska_robot/Looks/Lidar/Shader.outputs:out>
+            token outputs:mdl:surface.connect = </jaska_robot/Looks/Lidar/Shader.outputs:out>
+            token outputs:mdl:volume.connect = </jaska_robot/Looks/Lidar/Shader.outputs:out>
+
+            def Shader "Shader"
+            {
+                uniform token info:implementationSource = "sourceAsset"
+                uniform asset info:mdl:sourceAsset = @OmniPBR.mdl@
+                uniform token info:mdl:sourceAsset:subIdentifier = "OmniPBR"
+                color3f inputs:diffuse_color_constant = (0.000001, 0, 0)
+                color3f inputs:emissive_color = (0.6829971, 0.09054141, 0.09054141)
+                token outputs:out (
+                    renderType = "material"
+                )
+            }
+        }
+
+        def Material "Wheel"
+        {
+            token outputs:mdl:displacement.connect = </jaska_robot/Looks/Wheel/Shader.outputs:out>
+            token outputs:mdl:surface.connect = </jaska_robot/Looks/Wheel/Shader.outputs:out>
+            token outputs:mdl:volume.connect = </jaska_robot/Looks/Wheel/Shader.outputs:out>
+
+            def Shader "Shader"
+            {
+                uniform token info:implementationSource = "sourceAsset"
+                uniform asset info:mdl:sourceAsset = @OmniPBR.mdl@
+                uniform token info:mdl:sourceAsset:subIdentifier = "OmniPBR"
+                color3f inputs:diffuse_color_constant = (0.9250721, 0.09330696, 0.09330696)
+                token outputs:out (
+                    renderType = "material"
+                )
+            }
+        }
+
+        def Material "Body"
+        {
+            token outputs:mdl:displacement.connect = </jaska_robot/Looks/Body/Shader.outputs:out>
+            token outputs:mdl:surface.connect = </jaska_robot/Looks/Body/Shader.outputs:out>
+            token outputs:mdl:volume.connect = </jaska_robot/Looks/Body/Shader.outputs:out>
+
+            def Shader "Shader"
+            {
+                uniform token info:implementationSource = "sourceAsset"
+                uniform asset info:mdl:sourceAsset = @OmniPBR.mdl@
+                uniform token info:mdl:sourceAsset:subIdentifier = "OmniPBR"
+                color3f inputs:diffuse_color_constant = (0.30036348, 0.49855906, 0.043103095)
+                token outputs:out (
+                    renderType = "material"
+                )
+            }
+        }
+    }
+
+    over "root_joint" (
+        active = false
+    )
+    {
+    }
+    variantSet "Physics" = {
+        "None" (
+            prepend references = @configuration/jaska_robot_base.usd@
+        ) {
+            over "joints" (
+                active = false
+            )
+            {
+            }
+
+        }
+        "PhysX" (
+            prepend payload = @configuration/jaska_robot_physics.usd@
+        ) {
+
+        }
+    }
+    variantSet "Sensor" = {
+        "None" {
+
+        }
+        "Sensors" (
+            prepend payload = @configuration/jaska_robot_sensor.usd@
+        ) {
+
+        }
+    }
+    variantSet "Robot" = {
+        "None" {
+
+        }
+        "Robot" (
+            prepend payload = @configuration/jaska_robot_robot.usd@
+        ) {
+
+        }
+    }
+}
+
+def "Render" (
+    hide_in_stage_window = true
+    no_delete = true
+)
+{
+    def "OmniverseKit"
+    {
+        def "HydraTextures" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            def RenderProduct "omni_kit_widget_viewport_ViewportTexture_0" (
+                prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxPostColorGradingAPI_1", "OmniRtxPostChromaticAberrationAPI_1", "OmniRtxPostBloomPhysicalAPI_1", "OmniRtxPostMatteObjectAPI_1", "OmniRtxPostCompositingAPI_1", "OmniRtxPostDofAPI_1", "OmniRtxPostMotionBlurAPI_1", "OmniRtxPostTvNoiseAPI_1", "OmniRtxPostTonemapIrayReinhardAPI_1", "OmniRtxPostDebugSettingsAPI_1", "OmniRtxDebugSettingsAPI_1"]
+                hide_in_stage_window = true
+                no_delete = true
+            )
+            {
+                rel camera = </OmniverseKit_Persp>
+                token omni:rtx:background:source:texture:textureMode = "repeatMirrored"
+                token omni:rtx:background:source:type = "domeLight"
+                bool omni:rtx:dlss:frameGeneration = 0
+                bool omni:rtx:material:db:nonVisualMaterialCSV:enabled = 0
+                bool omni:rtx:material:db:syncLoads = 1
+                token omni:rtx:post:dlss:execMode = "performance"
+                bool omni:rtx:post:registeredCompositing:invertColorCorrection = 1
+                bool omni:rtx:post:registeredCompositing:invertToneMap = 1
+                bool omni:rtx:pt:lightcache:cached:dontResolveConflicts = 1
+                int omni:rtx:pt:maxSamplesPerLaunch = 2073600
+                int omni:rtx:pt:mgpu:maxPixelsPerRegionExponent = 12
+                color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
+                bool omni:rtx:rt:demoire = 0
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:rt:lightcache:spatialCache:dontResolveConflicts = 1
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                bool omni:rtx:scene:hydra:mdlMaterialWarmup = 1
+                uint omni:rtx:viewTile:limit = 4294967295
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (1280, 720)
+            }
+
+            def RenderProduct "omni_kit_widget_viewport_ViewportTexture_1" (
+                prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxPostColorGradingAPI_1", "OmniRtxPostChromaticAberrationAPI_1", "OmniRtxPostBloomPhysicalAPI_1", "OmniRtxPostMatteObjectAPI_1", "OmniRtxPostCompositingAPI_1", "OmniRtxPostDofAPI_1", "OmniRtxPostMotionBlurAPI_1", "OmniRtxPostTvNoiseAPI_1", "OmniRtxPostTonemapIrayReinhardAPI_1", "OmniRtxPostDebugSettingsAPI_1", "OmniRtxDebugSettingsAPI_1"]
+                hide_in_stage_window = true
+                no_delete = true
+            )
+            {
+                rel camera = </jaska_robot/zed_camera_link/base_link/ZED_X/CameraLeft>
+                token omni:rtx:background:source:texture:textureMode = "repeatMirrored"
+                token omni:rtx:background:source:type = "domeLight"
+                bool omni:rtx:dlss:frameGeneration = 0
+                bool omni:rtx:material:db:nonVisualMaterialCSV:enabled = 0
+                bool omni:rtx:material:db:syncLoads = 1
+                token omni:rtx:post:dlss:execMode = "performance"
+                bool omni:rtx:post:registeredCompositing:invertColorCorrection = 1
+                bool omni:rtx:post:registeredCompositing:invertToneMap = 1
+                bool omni:rtx:pt:lightcache:cached:dontResolveConflicts = 1
+                int omni:rtx:pt:maxSamplesPerLaunch = 2073600
+                int omni:rtx:pt:mgpu:maxPixelsPerRegionExponent = 12
+                color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
+                bool omni:rtx:rt:demoire = 0
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:rt:lightcache:spatialCache:dontResolveConflicts = 1
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                bool omni:rtx:scene:hydra:mdlMaterialWarmup = 1
+                uint omni:rtx:viewTile:limit = 4294967295
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (1280, 720)
+            }
+        }
+    }
+
+    def RenderSettings "OmniverseGlobalRenderSettings" (
+        prepend apiSchemas = ["OmniRtxSettingsGlobalRtAdvancedAPI_1", "OmniRtxSettingsGlobalPtAdvancedAPI_1"]
+        no_delete = true
+    )
+    {
+        rel products = [
+            </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_0>,
+            </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_1>,
+        ]
+    }
+
+    def "Vars"
+    {
+        def RenderVar "LdrColor" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            uniform string sourceName = "LdrColor"
+        }
+    }
+}
+

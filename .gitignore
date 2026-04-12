@@ -1,6 +1,3 @@
-# Generated URDF from xacro (temporary file for Isaac Sim)
-urdf/*.urdf
-
 # USD Cache and temporary files
 usd/*.usda.backup
 usd/*.usd.backup

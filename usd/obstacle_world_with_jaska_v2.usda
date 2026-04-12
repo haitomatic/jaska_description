@@ -1,0 +1,353 @@
+#usda 1.0
+(
+    customLayerData = {
+        dictionary cameraSettings = {
+            dictionary Front = {
+                double3 position = (5, 0, 0)
+                double radius = 5
+            }
+            dictionary Perspective = {
+                double3 position = (4.7477550709986795, 4.481309549175227, 7.297365484975288)
+                double3 target = (5.056213314368499, -0.05786277691285591, 0.17556496862471693)
+            }
+            dictionary Right = {
+                double3 position = (0, -5, 0)
+                double radius = 5
+            }
+            dictionary Top = {
+                double3 position = (0, 0, 5)
+                double radius = 5
+            }
+            string boundCamera = "/OmniverseKit_Persp"
+        }
+        dictionary omni_layer = {
+            string authoring_layer = "./obstacle_world.usda"
+        }
+        dictionary renderSettings = {
+        }
+    }
+    defaultPrim = "World"
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Xform "World"
+{
+    def PhysicsScene "physicsScene" (
+        prepend apiSchemas = ["PhysxSceneAPI"]
+    )
+    {
+        vector3f physics:gravityDirection = (0, 0, -1)
+        float physics:gravityMagnitude = 9.81
+    }
+
+    def DistantLight "SunLight" (
+        prepend apiSchemas = ["ShapingAPI"]
+    )
+    {
+        float inputs:angle = 1
+        float inputs:intensity = 3000
+        quatd xformOp:orient = (0.6532814824381883, 0.2705980500730985, 0.27059805007309845, 0.6532814824381882)
+        double3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+
+    def Mesh "GroundPlane" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+    )
+    {
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 2, 3]
+        normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1)]
+        uniform token physics:approximation = "none"
+        point3f[] points = [(-50, -50, 0), (50, -50, 0), (50, 50, 0), (-50, 50, 0)]
+        color3f[] primvars:displayColor = [(0.55, 0.55, 0.55)]
+        float[] primvars:displayOpacity = [1]
+        double3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Box_01" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.2, 0.2, 0.2)]
+        double size = 1
+        double3 xformOp:scale = (0.6, 0.6, 0.5)
+        double3 xformOp:translate = (3, 0, 0.25)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Box_02" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.75, 0.35, 0.1)]
+        double size = 1
+        double3 xformOp:scale = (0.5, 1, 0.4)
+        double3 xformOp:translate = (5, 1.5, 0.2)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Box_03" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.75, 0.35, 0.1)]
+        double size = 1
+        double3 xformOp:scale = (0.4, 0.8, 0.6)
+        double3 xformOp:translate = (6, -1.5, 0.3)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cylinder "Pillar_01" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        double height = 1
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.95, 0.85, 0.05)]
+        double radius = 0.2
+        double3 xformOp:translate = (4, -0.8, 0.5)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cylinder "Pillar_02" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        double height = 1
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.95, 0.85, 0.05)]
+        double radius = 0.2
+        double3 xformOp:translate = (4, 0.8, 0.5)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Wall_01" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.75, 0.75, 0.75)]
+        double size = 1
+        double3 xformOp:scale = (0.2, 3, 0.8)
+        double3 xformOp:translate = (8, 0, 0.4)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Border_North" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.6, 0.6, 0.6)]
+        double size = 1
+        double3 xformOp:scale = (100, 0.5, 0.2)
+        double3 xformOp:translate = (0, 50, 0.1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Border_South" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.6, 0.6, 0.6)]
+        double size = 1
+        double3 xformOp:scale = (100, 0.5, 0.2)
+        double3 xformOp:translate = (0, -50, 0.1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Border_East" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.6, 0.6, 0.6)]
+        double size = 1
+        double3 xformOp:scale = (0.5, 100, 0.2)
+        double3 xformOp:translate = (50, 0, 0.1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Border_West" (
+        prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsRigidBodyAPI"]
+    )
+    {
+        bool physics:kinematicEnabled = 1
+        color3f[] primvars:displayColor = [(0.6, 0.6, 0.6)]
+        double size = 1
+        double3 xformOp:scale = (0.5, 100, 0.2)
+        double3 xformOp:translate = (-50, 0, 0.1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def "jaska_v2" (
+        prepend payload = @./jaska_v2.usda@
+    )
+    {
+        quatf xformOp:orient = (1, 0, 0, 0)
+        float3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (6.036369323730469, 0.1681226797600952, 0.35731032147369335)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+        over "ActionGraph"
+        {
+            over "ActionGraph"
+            {
+                over "make_array_01"
+                {
+                    custom token inputs:input1
+                    delete token inputs:input1.connect = </World/jaska_v2/ActionGraph/ActionGraph/get_array_index_01.outputs:value>
+                    prepend token inputs:input1.connect = </World/jaska_v2/ActionGraph/ActionGraph/get_array_index_01.outputs:value>
+                    custom token inputs:input2
+                    delete token inputs:input2.connect = </World/jaska_v2/ActionGraph/ActionGraph/get_array_index.outputs:value>
+                    prepend token inputs:input2.connect = </World/jaska_v2/ActionGraph/ActionGraph/get_array_index.outputs:value>
+                    custom token inputs:input3
+                    delete token inputs:input3.connect = </World/jaska_v2/ActionGraph/ActionGraph/get_array_index_01.outputs:value>
+                    prepend token inputs:input3.connect = </World/jaska_v2/ActionGraph/ActionGraph/get_array_index_01.outputs:value>
+                }
+
+                over "make_array"
+                {
+                    custom token inputs:input0
+                    delete token inputs:input0.connect = </World/jaska_v2/ActionGraph/ActionGraph/constant_token.inputs:value>
+                    prepend token inputs:input0.connect = </World/jaska_v2/ActionGraph/ActionGraph/constant_token.inputs:value>
+                }
+            }
+        }
+
+        over "jaska_v2"
+        {
+            over "base_link"
+            {
+            }
+
+            over "front_left_wheel"
+            {
+            }
+
+            over "front_right_wheel"
+            {
+            }
+
+            over "lidar_and_camera_mount_link"
+            {
+            }
+
+            over "unitree_lidar_link"
+            {
+            }
+
+            over "zed_camera_center"
+            {
+            }
+
+            over "rear_left_wheel"
+            {
+            }
+
+            over "rear_right_wheel"
+            {
+            }
+
+            over "joints"
+            {
+                over "front_left_wheel_joint"
+                {
+                    float state:angular:physics:position = 0
+                    float state:angular:physics:velocity = 0
+                }
+
+                over "front_right_wheel_joint"
+                {
+                    float state:angular:physics:position = 0
+                    float state:angular:physics:velocity = 0
+                }
+
+                over "rear_left_wheel_joint"
+                {
+                    float state:angular:physics:position = 0
+                    float state:angular:physics:velocity = 0
+                }
+
+                over "rear_right_wheel_joint"
+                {
+                    float state:angular:physics:position = 0
+                    float state:angular:physics:velocity = 0
+                }
+            }
+        }
+    }
+}
+
+def "Render" (
+    hide_in_stage_window = true
+    no_delete = true
+)
+{
+    def "OmniverseKit"
+    {
+        def "HydraTextures" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            def RenderProduct "omni_kit_widget_viewport_ViewportTexture_0" (
+                prepend apiSchemas = ["OmniRtxSettingsCommonAdvancedAPI_1", "OmniRtxSettingsRtAdvancedAPI_1", "OmniRtxSettingsPtAdvancedAPI_1", "OmniRtxPostColorGradingAPI_1", "OmniRtxPostChromaticAberrationAPI_1", "OmniRtxPostBloomPhysicalAPI_1", "OmniRtxPostMatteObjectAPI_1", "OmniRtxPostCompositingAPI_1", "OmniRtxPostDofAPI_1", "OmniRtxPostMotionBlurAPI_1", "OmniRtxPostTvNoiseAPI_1", "OmniRtxPostTonemapIrayReinhardAPI_1", "OmniRtxPostDebugSettingsAPI_1", "OmniRtxDebugSettingsAPI_1"]
+                hide_in_stage_window = true
+                no_delete = true
+            )
+            {
+                rel camera = </OmniverseKit_Persp>
+                token omni:rtx:background:source:texture:textureMode = "repeatMirrored"
+                token omni:rtx:background:source:type = "domeLight"
+                bool omni:rtx:dlss:frameGeneration = 0
+                bool omni:rtx:material:db:nonVisualMaterialCSV:enabled = 0
+                bool omni:rtx:material:db:syncLoads = 1
+                token omni:rtx:post:dlss:execMode = "performance"
+                bool omni:rtx:post:registeredCompositing:invertColorCorrection = 1
+                bool omni:rtx:post:registeredCompositing:invertToneMap = 1
+                bool omni:rtx:pt:lightcache:cached:dontResolveConflicts = 1
+                int omni:rtx:pt:maxSamplesPerLaunch = 2073600
+                int omni:rtx:pt:mgpu:maxPixelsPerRegionExponent = 12
+                color3f omni:rtx:rt:ambientLight:color = (0.1, 0.1, 0.1)
+                bool omni:rtx:rt:demoire = 0
+                bool omni:rtx:rt:ecoMode:enabled
+                bool omni:rtx:rt:lightcache:spatialCache:dontResolveConflicts = 1
+                bool omni:rtx:scene:hydra:materialSyncLoads = 1
+                bool omni:rtx:scene:hydra:mdlMaterialWarmup = 1
+                uint omni:rtx:viewTile:limit = 4294967295
+                rel orderedVars = </Render/Vars/LdrColor>
+                custom bool overrideClipRange = 0
+                uniform int2 resolution = (1280, 720)
+            }
+        }
+    }
+
+    def RenderSettings "OmniverseGlobalRenderSettings" (
+        prepend apiSchemas = ["OmniRtxSettingsGlobalRtAdvancedAPI_1", "OmniRtxSettingsGlobalPtAdvancedAPI_1"]
+        no_delete = true
+    )
+    {
+        rel products = </Render/OmniverseKit/HydraTextures/omni_kit_widget_viewport_ViewportTexture_0>
+    }
+
+    def "Vars"
+    {
+        def RenderVar "LdrColor" (
+            hide_in_stage_window = true
+            no_delete = true
+        )
+        {
+            uniform string sourceName = "LdrColor"
+        }
+    }
+}
+
