@@ -33,6 +33,12 @@ jaska_description/
 │   └── wheel.stl
 ├── rviz/             # RViz configuration files
 │   └── jaska_robot.rviz
+├── scripts/
+│   └── isaac_sim/    # Isaac Sim utilities (see Isaac Sim Integration)
+│       ├── isaac_graph_service.py
+│       ├── prim_tool.py
+│       ├── check_is_topics.py
+│       └── jaska_test.py
 └── urdf/             # URDF/xacro files
     ├── jaska_robot.xacro
     └── jaska_wheel.xacro
@@ -135,99 +141,68 @@ This will:
 
 ## TF Frames
 
-The robot has the following TF frame hierarchy:
+### jaska_v2 TF Tree
+
+The full frame tree as published at runtime. `base_footprint` is at ground level (z=0); `base_link` is the robot body centre (z=+0.322m above ground).
 
 ```
-base_link (robot base, main reference frame)
-├── left_rocker (left rocker arm, revolute joint)
-│   ├── front_left_wheel (left front wheel, continuous joint)
-│   └── left_bogie (left bogie arm, revolute joint)
-│       ├── middle_left_wheel (left middle wheel, continuous joint)
-│       └── rear_left_wheel (left rear wheel, continuous joint)
-│
-├── right_rocker (right rocker arm, revolute joint)
-│   ├── front_right_wheel (right front wheel, continuous joint)
-│   └── right_bogie (right bogie arm, revolute joint)
-│       ├── middle_right_wheel (right middle wheel, continuous joint)
-│       └── rear_right_wheel (right rear wheel, continuous joint)
-│
-└── sensor_mount_base (-45° forward tilt, fixed joint)
-    ├── unitree_lidar_link (Unitree L2 lidar body, fixed joint)
-    │   └── unitree_lidar_optical_frame (lidar optical center, fixed joint)
-    │
-    └── zed_camera_link (ZED X camera mount point, fixed joint)
-        └── zed_camera_center (camera center body, fixed joint)
-            ├── zed_left_camera_frame (left camera frame, fixed joint)
-            │   └── zed_left_camera_optical_frame (left optical frame, fixed joint)
-            │
-            └── zed_right_camera_frame (right camera frame, fixed joint)
-                └── zed_right_camera_optical_frame (right optical frame, fixed joint)
+map                              (Nav2 AMCL/SLAM — added at runtime)
+ └── odom                        (odometry origin)
+      └── base_footprint         (ground-level reference, REP-105)
+           └── base_link         (robot body centre, z=+0.322m)
+               │
+               ├── front_left_wheel   [continuous] xyz=( 0.423,  0.302, -0.201)
+               ├── front_right_wheel  [continuous] xyz=( 0.423, -0.301, -0.201)
+               ├── rear_left_wheel    [continuous] xyz=(-0.427,  0.302, -0.201)
+               ├── rear_right_wheel   [continuous] xyz=(-0.427, -0.301, -0.201)
+               │
+               └── lidar_and_camera_mount_link  [fixed] xyz=(0.350, -0.043, 0.160) pitch=+45°
+                   │
+                   ├── unitree_lidar_link       [fixed] xyz=(0.001,  0.005, 0.090) pitch=-45°
+                   │   └── unilidar_lidar       [fixed] xyz=(0, 0, 0.030)
+                   │                            ★ lidar scan-origin frame
+                   │
+                   └── zed_camera_link          [fixed] xyz=(0.130,  0.042, 0.060) pitch=-45°
+                       └── zed_camera_center    (optional — --profile camera)
 ```
 
-### Displaying TF Frames in RViz2
+### What publishes what
 
-To visualize the TF tree in RViz2:
+| Frame transition | Published by | Topic | Notes |
+|---|---|---|---|
+| `map → odom` | Nav2 AMCL / slam_toolbox | `/tf` | Added at Nav2 runtime |
+| `odom → base_footprint` | `OdometryPublisher` AG (`tf_odom_to_base` node) | `/tf` | Dynamic — updated every tick from physics |
+| `base_footprint → base_link` | `robot_state_publisher` | `/tf_static` | Fixed joint, z=+0.322m, from URDF |
+| `base_link → wheels` | `robot_state_publisher` | `/tf` | From `/joint_states` (continuous joints) |
+| `base_link → sensors` | `robot_state_publisher` | `/tf_static` | Fixed joints from URDF |
 
-1. **Launch the robot description**:
-   ```bash
-   ros2 launch jaska_description display.launch.py
-   ```
+> **Nav2 config:** `robot_base_frame: base_footprint`, `odom_frame_id: odom`, `global_frame_id: map`.
 
-2. **Enable TF display in RViz2**:
-   - In the RViz2 window, click **"Add"** button in the Displays panel
-   - Select **"By display type"** → **"TF"**
-   - Click **"OK"**
+> **`robot_state_publisher` is required** — it publishes `base_footprint → base_link` and all sensor frames from the URDF.
 
-3. **Configure TF display options**:
-   - Expand the **TF** item in the Displays panel
-   - Check **"Show Axes"** to display coordinate axes for each frame
-   - Check **"Show Names"** to display frame names
-   - Adjust **"Marker Scale"** (default: 1.0) to change axes size
-   - Adjust **"Alpha"** (default: 1.0) for transparency
+### Inspect TF at runtime
 
-4. **View specific frames**:
-   - Expand **"Frames"** under TF display
-   - Check/uncheck individual frames to show/hide them
-   - Common frames to monitor:
-     - `base_link` - Robot base
-     - `sensor_mount_base` - Sensor mount plate
-     - `unitree_lidar_optical_frame` - Lidar scanning center
-     - `zed_left_camera_optical_frame` - Left camera optical center
-     - `zed_right_camera_optical_frame` - Right camera optical center
+```bash
+# Live TF tree snapshot (generates frames.pdf)
+source /opt/ros/jazzy/setup.bash
+ros2 run tf2_tools view_frames
 
-5. **View TF tree in terminal**:
-   ```bash
-   # View TF tree structure
-   ros2 run tf2_tools view_frames
+# Echo a specific transform
+ros2 run tf2_ros tf2_echo base_link unilidar_lidar
 
-   # This generates frames.pdf showing the complete TF tree
-   # Open it with:
-   evince frames.pdf
-   ```
+# List all active frames
+ros2 run tf2_ros tf2_monitor
+```
 
-6. **Monitor TF transforms**:
-   ```bash
-   # Echo transform between two frames
-   ros2 run tf2_ros tf2_echo base_link zed_left_camera_optical_frame
+### TF conventions
 
-   # List all active frames
-   ros2 run tf2_ros tf2_monitor
-   ```
+| Axis | Direction |
+|---|---|
+| X | Forward |
+| Y | Left |
+| Z | Up |
 
-### TF Frame Conventions
-
-- **Coordinate system**: ROS REP 103 standard
-  - X: Forward
-  - Y: Left
-  - Z: Up
-
-- **Optical frames**: Follow camera convention (Z forward, X right, Y down)
-  - `*_optical_frame` frames are rotated -90° around X, then -90° around Z
-
-- **Joint types**:
-  - `revolute`: Limited rotation joints (rockers, bogies)
-  - `continuous`: Unlimited rotation joints (wheels)
-  - `fixed`: No movement (sensors, mounts)
+Optical frames (`zed_*_optical_frame`) follow the camera convention: **Z forward, X right, Y down** — rotated −90° around X then −90° around Z relative to their parent.
 
 ## Integration with ZED ROS2 Wrapper
 
@@ -489,28 +464,325 @@ Place your STL files in the `meshes/` directory and reference them:
 
 ## Isaac Sim Integration
 
-The Jaska robot can be imported into NVIDIA Isaac Sim for high-f###idelity physics simulation and RTX sensor simulation. USD (Universal Scene Description) assets are stored in the `usd/` directory.
+The Jaska v2 robot (`jaska_v2`) is imported into NVIDIA Isaac Sim 5.1 for high-fidelity PhysX simulation, RTX lidar/sensor simulation, and ROS2 Nav2 integration. USD assets are stored in the `usd/` and `urdf/jaska_v2/` directories.
 
-### Quick Start
+### URDF Import into Isaac Sim (GUI)
 
-1. **Process xacro to URDF:**
+> **Important:** The import settings below are required for the robot to move correctly in simulation. Using wrong settings will anchor the robot to the world.
+
+1. **Open Isaac Sim** and go to **Isaac Utils → Workflows → URDF Importer**
+
+2. **Set the Input File** to:
+   ```
+   <path_to_package>/urdf/jaska_v2.urdf
+   ```
+
+3. **Import Settings — critical options:**
+
+   | Setting | Value | Reason |
+   |---|---|---|
+   | **Fix Base Link** | ☐ **UNCHECKED** | Must be off — checking this creates a `root_joint` that anchors the robot to the world and prevents movement |
+   | **Joint Drive Type** | **Velocity** | Wheel joints must use velocity control so `cmd_vel` commands translate to wheel velocities via damping |
+   | **Joint Drive Strength** (damping) | ~1025 | Applied per wheel joint as the velocity gain |
+
+4. **Click Import** — Isaac Sim generates the USD hierarchy under `urdf/jaska_v2/`:
+   ```
+   urdf/jaska_v2/
+   ├── jaska_v2.usd                  # Top-level robot USD (visual + structure)
+   └── configuration/
+       ├── jaska_v2_physics.usd      # Physics: articulation root, joint drives, collision
+       └── jaska_v2_instanceable_meshes.usd
+   ```
+
+5. **Verify physics structure** after import using `usdcat`:
    ```bash
-   xacro urdf/jaska_robot.xacro > urdf/jaska_robot.urdf
+   ~/haito_dev/usd_root/bin/usdcat urdf/jaska_v2/configuration/jaska_v2_physics.usd \
+     --flatten -o /tmp/jaska_v2_physics.usda
+   grep -A5 "PhysicsArticulationRootAPI\|root_joint\|stiffness" /tmp/jaska_v2_physics.usda
    ```
-
-2. **Convert to USD** using Isaac Sim's URDF Importer (GUI or Python)
-
-3. **Load in Isaac Sim:**
-   ```python
-   from omni.isaac.core.utils.stage import add_reference_to_stage
-
-   add_reference_to_stage(
-       usd_path="package://jaska_description/usd/jaska_robot.usd",
-       prim_path="/World/Jaska"
+   Expected output — **no `root_joint`**, `PhysicsArticulationRootAPI` on `base_link`, `stiffness = 0`:
+   ```usda
+   def Xform "base_link" (
+       prepend apiSchemas = ["PhysicsArticulationRootAPI", "PhysxArticulationAPI"]
    )
+   # drive:angular:physics:stiffness = 0   ← velocity control confirmed
+   # drive:angular:physics:damping   = ~1025
    ```
 
-**For detailed conversion instructions, usage examples, and ROS2 bridge integration, see [`usd/README.md`](usd/README.md).**
+### Loading in a World Scene
+
+`jaska_v2.usda` (in `usd/`) is the main scene file that references the URDF-imported USD as a payload and adds all OmniGraph ActionGraphs for ROS2 topics. It is loaded into a world scene as a payload at `/World/jaska_v2`.
+
+```usda
+# metropolia_myyrmaki.usda (excerpt)
+def Xform "jaska_v2" (
+    payload = @./jaska_v2.usda@</World>
+)
+```
+
+> **Path remapping note:** When `jaska_v2.usda` (defaultPrim `World`) is loaded as a payload at `/World/jaska_v2`, USD remaps all prim paths. The articulation root ends up at `/World/jaska_v2/jaska_v2/base_link` on the composed stage. String attributes like `inputs:robotPath` must use this full stage path — they are **not** automatically remapped.
+
+### OmniGraph ActionGraphs (ROS2 Bridge)
+
+`jaska_v2.usda` contains 6 OmniGraph ActionGraphs for ROS2 topic publishing:
+
+| Graph | Published Topics |
+|---|---|
+| `DifferentialDrive` | Subscribes `/cmd_vel`, drives wheel joints |
+| `OdometryPublisher` | `/odom` (nav_msgs/Odometry) |
+| `JointStatePublisher` | `/joint_states` |
+| `TFPublisher` | `/tf` |
+| `LidarPublisher` | `/unilidar/cloud` (PointCloud2) |
+
+All graphs require `fabricCacheBacking = "Shared"` to execute in Isaac Sim 5.1.
+
+### Isaac Sim Scripts
+
+Python utilities for interacting with the running simulation live in `scripts/isaac_sim/`.
+
+**Prerequisites for all scripts:**
+- Isaac Sim running with `isaac_graph_service.py` loaded in the Script Editor (REST on `localhost:8011`)
+- ROS2 Jazzy sourced: `source /opt/ros/jazzy/setup.bash`
+
+#### `isaac_graph_service.py`
+
+REST API server that exposes Isaac Sim stage operations. Must be running inside IS for the other tools to work.
+
+**Setup (once per IS session):**
+1. Open Isaac Sim → Window → Script Editor
+2. Open `scripts/isaac_sim/isaac_graph_service.py`
+3. Click **Run** — service starts on `http://localhost:8011`
+4. Verify: `curl http://localhost:8011/docs`
+
+---
+
+#### `prim_tool.py`
+
+Save GUI edits from the live IS stage to disk, or hot-reload a USDA file into the running stage. Scoped to `/World/jaska_v2`.
+
+```bash
+cd ~/haito_dev/ros2_ws/src/jaska_description
+
+# Save live stage edits → usd/jaska_v2/jaska_v2.usda
+python3 scripts/isaac_sim/prim_tool.py save
+
+# Save to a staging file first
+python3 scripts/isaac_sim/prim_tool.py save usd/jaska_v2_wip.usda
+
+# Hot-reload an edited file into the running stage
+python3 scripts/isaac_sim/prim_tool.py load
+python3 scripts/isaac_sim/prim_tool.py load usd/jaska_v2_wip.usda
+```
+
+---
+
+#### `check_is_topics.py`
+
+Inspect ROS2 topic rates and QoS from a running IS simulation.
+
+```bash
+source /opt/ros/jazzy/setup.bash
+python3 scripts/isaac_sim/check_is_topics.py
+
+# Faster sample (3 s per topic):
+SAMPLE_TIME=3 python3 scripts/isaac_sim/check_is_topics.py
+```
+
+Sim must be **playing**. Outputs topic Hz rates, AG QoS, DDS QoS, and compatibility.
+
+> **Note:** `ros2 node list` will always be empty — Isaac Sim uses anonymous DDS endpoints and does not register named ROS2 nodes. This is expected.
+
+---
+
+#### `jaska_test.py`
+
+Smoke test for the live simulation: stationary turn + odometry verification + lidar cloud check.
+
+```bash
+source /opt/ros/jazzy/setup.bash
+python3 scripts/isaac_sim/jaska_test.py
+```
+
+| Test | Pass criteria |
+|------|---------------|
+| Stationary turn (3 s, ω = 0.5 rad/s) | `/odom` publishing, XY drift < 0.15 m, yaw change ≥ 15° |
+| Lidar cloud (3 s listen) | `/unilidar/cloud` receives ≥ 1 message |
+
+Sim must be **playing** — the script checks `/sim/status` and exits if not.
+
+---
+
+#### Manual drive with teleop
+
+Drive the robot interactively from the keyboard using `teleop_twist_keyboard`.
+
+**Install (once):**
+```bash
+sudo apt install ros-jazzy-teleop-twist-keyboard
+```
+
+**Run:**
+```bash
+source /opt/ros/jazzy/setup.bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
+
+| Key | Motion |
+|-----|--------|
+| `i` | Forward |
+| `,` | Backward |
+| `j` | Rotate left (CCW) |
+| `l` | Rotate right (CW) |
+| `u` / `o` | Forward + turn |
+| `k` | Stop |
+| `q` / `z` | Increase / decrease speed |
+
+Publishes to `/cmd_vel`. Sim must be **playing**.
+
+---
+
+### Typical Edit Workflow
+
+```
+1. Open IS, load usd/metropolia_myyrmaki/metropolia_myyrmaki.usda
+2. Run isaac_graph_service.py in Script Editor
+3. Make edits in the IS GUI
+4. python3 scripts/isaac_sim/prim_tool.py save
+5. git diff usd/jaska_v2/jaska_v2.usda
+6. git commit
+```
+
+### Simulation Environments
+
+| Environment | File | Description |
+|---|---|---|
+| **Metropolia Myyrmäki** | `usd/metropolia_myyrmaki/metropolia_myyrmaki.usda` | Real 1st-floor layout of the Metropolia Myyrmäki campus building. Walls, corridors and rooms for realistic indoor navigation. |
+
+To use: **File → Open** in Isaac Sim, navigate to the `.usda` file, then press **Play**.
+
+---
+
+#### Metropolia Myyrmäki — Build Log
+
+Step-by-step record of how `metropolia_myyrmaki.usda` was constructed from scratch.
+
+**Source file**
+
+The building geometry came from an FBX export of the Myyrmäki campus 1st floor (`1FloorMyyr.usd`, renamed to `Floor1.usd`). The FBX was imported into Isaac Sim which produced a binary USDC with a single mesh prim at `/World/Foor1/path1` (note the FBX-importer typo "Foor1"). The FBX coordinate system is **centimetres + Y-up**, which requires correction in the world USDA.
+
+**Step 1 — Create the world USDA**
+
+Created `metropolia_myyrmaki.usda` with correct world settings:
+
+```usda
+(
+    defaultPrim  = "World"
+    metersPerUnit = 1
+    upAxis       = "Z"
+)
+```
+
+**Step 2 — Load the building as a payload with coordinate fixes**
+
+```usda
+def "Floor1" (
+    prepend payload = @./Floor1.usd@
+)
+{
+    # cm → m conversion
+    double3 xformOp:scale:unitsResolve = (0.01, 0.01, 0.01)
+    # Y-up (FBX) → Z-up (USD/ROS)
+    double xformOp:rotateX:unitsResolve = 90
+    uniform token[] xformOpOrder = [
+        "xformOp:translate", "xformOp:rotateXYZ",
+        "xformOp:scale", "xformOp:rotateX:unitsResolve",
+        "xformOp:scale:unitsResolve"
+    ]
+}
+```
+
+After both transforms the building is ~129 m × 125 m at real scale — the robot (0.5 m wide) will look tiny in a top-down view; this is correct.
+
+**Step 3 — Add PhysicsScene**
+
+```usda
+def PhysicsScene "PhysicsScene" (
+    prepend apiSchemas = ["PhysxSceneAPI"]
+) {}
+```
+
+Required for any PhysX simulation. Without it the robot falls through the ground.
+
+**Step 4 — Add jaska\_v2 as a payload**
+
+```usda
+def Xform "jaska_v2" (
+    prepend payload = @../../jaska_v2/jaska_v2.usda@
+)
+{
+    double3 xformOp:translate = (1.8, 1.9, 0.32)
+    ...
+}
+```
+
+The spawn position places the robot inside the building entrance area at ~floor height.
+
+**Step 5 — Add a GroundPlane with collision**
+
+The building mesh does not include a physics floor slab, so an infinite collision plane was added:
+
+```usda
+def Xform "GroundPlane" {
+    def Plane "CollisionPlane" (
+        prepend apiSchemas = ["PhysicsCollisionAPI"]
+    ) {
+        uniform token axis = "Z"
+    }
+}
+```
+
+**Step 6 — Add LidarProduct render product**
+
+Required by the `LidarPublisher` OmniGraph to produce RTX lidar point-cloud data:
+
+```usda
+def "Render" {
+    def RenderProduct "LidarProduct" {
+        rel camera    = </World/jaska_v2/unitree_lidar_link/UnitreeL2>
+        int2 resolution = (1, 1)
+    }
+}
+```
+
+**Step 7 — Add a DistantLight**
+
+```usda
+def DistantLight "defaultLight" (
+    prepend apiSchemas = ["ShapingAPI"]
+) {
+    float inputs:intensity = 3000
+    ...
+}
+```
+
+**Step 8 — Enable wall collision on the building mesh**
+
+The FBX import creates only visual meshes — the robot would pass through walls. Fixed by adding `PhysicsCollisionAPI` via an `over` block (no modification to `Floor1.usd` needed):
+
+```usda
+over "Floor1" {
+    over "Foor1" {
+        over "path1" (
+            prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMeshCollisionAPI"]
+        ) {
+            # exact triangle mesh — most accurate, higher CPU cost
+            uniform token physics:approximation = "none"
+        }
+    }
+}
+```
+
+> If physics feels sluggish on a large map, change `physics:approximation` to `"meshSimplification"`.
 
 ## License
 

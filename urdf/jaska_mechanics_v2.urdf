@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="Metrojoe Rover Assembly">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="0.0170222616739411 0.000183919617328748 0.0474428114892766"
+        rpy="0 0 0" />
+      <mass
+        value="45.4484531162834" />
+      <inertia
+        ixx="0.43388923029659"
+        ixy="2.55112181599975E-05"
+        ixz="-0.0128692818885221"
+        iyy="0.915998509052372"
+        iyz="-0.000366336363693261"
+        izz="1.17768516830446" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="front_left_wheel">
+    <inertial>
+      <origin
+        xyz="4.21454759980122E-10 -9.69858415800218E-10 -0.0447892364445993"
+        rpy="0 0 0" />
+      <mass
+        value="4.35753639315825" />
+      <inertia
+        ixx="0.012892993411603"
+        ixy="0.00108469725747096"
+        ixz="3.65849726862846E-10"
+        iyy="0.00639521219913669"
+        iyz="1.57680373234348E-10"
+        izz="0.0130591851043797" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/front_left_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/front_left_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.42316 0.30165 -0.20145"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_left_wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="front_right_wheel">
+    <inertial>
+      <origin
+        xyz="4.21547352580376E-10 -9.69923724669641E-10 0.0448107635553963"
+        rpy="0 0 0" />
+      <mass
+        value="4.35753639315826" />
+      <inertia
+        ixx="0.012892993411603"
+        ixy="0.00108469725747094"
+        ixz="3.65849724310847E-10"
+        iyy="0.00639521219913669"
+        iyz="1.57680401556662E-10"
+        izz="0.0130591851043797" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/front_right_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/front_right_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="front_right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.42321 -0.30141 -0.20139"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="front_right_wheel" />
+    <axis
+      xyz="0 0 1" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="rear_left_wheel">
+    <inertial>
+      <origin
+        xyz="3.18619401695752E-10 -1.00835190197657E-09 -0.0447892364450866"
+        rpy="0 0 0" />
+      <mass
+        value="4.35753639306677" />
+      <inertia
+        ixx="0.0130468949017929"
+        ixy="0.000390978594948193"
+        ixz="3.80232289698405E-10"
+        iyy="0.00624131070987693"
+        iyz="1.18880323791037E-10"
+        izz="0.013059185103982" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/rear_left_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/rear_left_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rear_left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-0.40462 0.30241 -0.24511"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="rear_left_wheel" />
+    <axis
+      xyz="0 0 -1" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="rear_right_wheel">
+    <inertial>
+      <origin
+        xyz="-3.18607029647922E-10 1.00833397187472E-09 0.0448107635549137"
+        rpy="0 0 0" />
+      <mass
+        value="4.35753639306677" />
+      <inertia
+        ixx="0.013046894901793"
+        ixy="0.000390978594948189"
+        ixz="-3.80232286475881E-10"
+        iyy="0.00624131070987693"
+        iyz="-1.18880320257395E-10"
+        izz="0.013059185103982" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/rear_right_wheel.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://jaska_description/meshes/jaska_v2/rear_right_wheel.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="rear_right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-0.43059 -0.30141 -0.19238"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="rear_right_wheel" />
+    <axis
+      xyz="0 0 1" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+</robot>

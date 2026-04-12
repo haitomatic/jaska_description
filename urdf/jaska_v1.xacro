@@ -1,0 +1,550 @@
+<?xml version="1.0"?>
+<robot name="jaska_robot"
+    xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:arg name="robot_namespace" default="/" />
+    <xacro:arg name="use_nominal_extrinsics" default="false" />
+
+    <!-- Variables -->
+    <xacro:property name="M_PI" value="3.14159"/>
+
+    <!-- Vehicle Geometries - Rocker-Bogie Configuration -->
+    <xacro:property name="base_x_size" value="0.800" />
+    <xacro:property name="base_y_size" value="0.400" />
+    <xacro:property name="base_z_size" value="0.170" />
+
+    <!-- Rocker-Bogie specific measurements -->
+    <xacro:property name="rocker_length" value="0.300" />
+    <xacro:property name="bogie_length" value="0.300" />
+    <xacro:property name="track_width" value="0.600" />
+
+    <!-- Wheel properties -->
+    <xacro:property name="wheel_radius" value="0.110" />
+    <xacro:property name="wheel_width" value="0.080" />
+    <xacro:property name="wheel_mass" value="2.5" />
+
+    <!-- Rocker-bogie angles and positions -->
+    <xacro:property name="rocker_pivot_offset_x" value="0.115" />
+    <xacro:property name="rocker_pivot_offset_z" value="0.0" />
+
+    <!-- Sensor mount properties -->
+    <xacro:property name="sensor_mount_angle" value="${-M_PI/4}" /> <!-- 45 degrees -->
+    <xacro:property name="sensor_mount_x" value="${base_x_size/2 - 0.040}" />
+    <xacro:property name="sensor_mount_y" value="-0.040" />
+    <xacro:property name="sensor_mount_z" value="${base_z_size/2 - 0.010}" />
+
+    <!-- Mesh orientation adjustments (adjust these to match your STL coordinate systems) -->
+    <xacro:property name="trunk_mesh_rpy" value="${M_PI/2} 0 0" />
+    <xacro:property name="rocker_mesh_rpy" value="${M_PI/2} 0 ${M_PI}" />
+    <xacro:property name="bogie_mesh_rpy" value="${M_PI/2} 0 0" />
+    <xacro:property name="wheel_mesh_rpy" value="${M_PI/2} 0 0" />
+
+    <!-- Mesh scale adjustments (typically 0.001 for mm to meters conversion) -->
+    <xacro:property name="trunk_mesh_scale" value="0.09 0.09 0.09" />
+    <xacro:property name="rocker_mesh_scale" value="0.06 0.06 0.06" />
+    <xacro:property name="bogie_mesh_scale" value="0.045 0.045 0.045" />
+    <xacro:property name="wheel_mesh_scale" value="0.023 0.023 0.023" />
+    <xacro:property name="sensor_mount_mesh_scale" value="0.001 0.001 0.001" />
+    <xacro:property name="lidar_mesh_scale" value="0.001 0.001 0.001" />
+    <xacro:property name="camera_mesh_scale" value="1 1 1" />
+
+    <!-- Disable collision checking between these link pairs -->
+    <disable_collisions link1="base_link" link2="left_rocker" reason="Adjacent"/>
+    <disable_collisions link1="base_link" link2="right_rocker" reason="Adjacent"/>
+    <disable_collisions link1="base_link" link2="sensor_mount_base" reason="Never"/>
+    <disable_collisions link1="left_rocker" link2="left_bogie" reason="Adjacent"/>
+    <disable_collisions link1="right_rocker" link2="right_bogie" reason="Adjacent"/>
+    <disable_collisions link1="sensor_mount_base" link2="unitree_lidar_link" reason="Never"/>
+    <disable_collisions link1="sensor_mount_base" link2="zed_camera_center" reason="Never"/>
+    <disable_collisions link1="unitree_lidar_link" link2="zed_camera_center" reason="Never"/>
+
+    <!-- Disable collisions between wheels and their parent links -->
+    <disable_collisions link1="left_rocker" link2="front_left_wheel" reason="Adjacent"/>
+    <disable_collisions link1="right_rocker" link2="front_right_wheel" reason="Adjacent"/>
+    <disable_collisions link1="left_bogie" link2="middle_left_wheel" reason="Adjacent"/>
+    <disable_collisions link1="right_bogie" link2="middle_right_wheel" reason="Adjacent"/>
+    <disable_collisions link1="left_bogie" link2="rear_left_wheel" reason="Adjacent"/>
+    <disable_collisions link1="right_bogie" link2="rear_right_wheel" reason="Adjacent"/>
+
+    <!-- Base link (main body) -->
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="${trunk_mesh_rpy}" />
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/trunk.stl" scale="${trunk_mesh_scale}"/>
+            </geometry>
+            <material name="jaska_blue">
+                <color rgba="0.2 0.4 0.8 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- Simplified collision geometry for better physics performance -->
+                <box size="${base_x_size} ${base_y_size} ${base_z_size}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="20.0"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="4.17" ixy="0" ixz="0" iyy="8.33" iyz="0" izz="4.17"/>
+        </inertial>
+    </link>
+
+    <!-- Left Rocker Link -->
+    <link name="left_rocker">
+        <visual>
+            <origin xyz="0 0 -0.100" rpy="${rocker_mesh_rpy}" />
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/rocker.stl" scale="${rocker_mesh_scale}"/>
+            </geometry>
+            <material name="jaska_gray">
+                <color rgba="0.6 0.6 0.6 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- Simplified collision geometry for better physics performance -->
+                <box size="${rocker_length} 0.080 0.060"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="5.0"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.083" ixy="0" ixz="0" iyy="0.267" iyz="0" izz="0.267"/>
+        </inertial>
+    </link>
+
+    <!-- Right Rocker Link -->
+    <link name="right_rocker">
+        <visual>
+            <origin xyz="0 0 -0.100" rpy="${rocker_mesh_rpy}" />
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/rocker.stl" scale="${rocker_mesh_scale}"/>
+            </geometry>
+            <material name="jaska_gray">
+                <color rgba="0.6 0.6 0.6 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- Simplified collision geometry for better physics performance -->
+                <box size="${rocker_length} 0.080 0.060"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="5.0"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.083" ixy="0" ixz="0" iyy="0.267" iyz="0" izz="0.267"/>
+        </inertial>
+    </link>
+
+    <!-- Left Bogie Link -->
+    <link name="left_bogie">
+        <visual>
+            <origin xyz="0 0 -0.050" rpy="${bogie_mesh_rpy}" />
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/bogie.stl" scale="${bogie_mesh_scale}"/>
+            </geometry>
+            <material name="jaska_dark_gray">
+                <color rgba="0.4 0.4 0.4 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- Simplified collision geometry for better physics performance -->
+                <box size="${bogie_length} 0.060 0.040"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="3.0"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.050" ixy="0" ixz="0" iyy="0.063" iyz="0" izz="0.063"/>
+        </inertial>
+    </link>
+
+    <!-- Right Bogie Link -->
+    <link name="right_bogie">
+        <visual>
+            <origin xyz="0 0 -0.050" rpy="${bogie_mesh_rpy}" />
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/bogie.stl" scale="${bogie_mesh_scale}"/>
+            </geometry>
+            <material name="jaska_dark_gray">
+                <color rgba="0.4 0.4 0.4 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- Simplified collision geometry for better physics performance -->
+                <box size="${bogie_length} 0.060 0.040"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="3.0"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.050" ixy="0" ixz="0" iyy="0.063" iyz="0" izz="0.063"/>
+        </inertial>
+    </link>
+
+    <!-- Rocker Joints (revolute - allows rocker-bogie motion) -->
+    <joint name="left_rocker_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="left_rocker"/>
+        <origin xyz="${rocker_pivot_offset_x} ${track_width/2-0.055} ${rocker_pivot_offset_z}" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-0.5" upper="0.5" effort="100" velocity="1.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
+    </joint>
+
+    <joint name="right_rocker_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="right_rocker"/>
+        <origin xyz="${rocker_pivot_offset_x} ${-track_width/2+0.055} ${rocker_pivot_offset_z}" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-0.5" upper="0.5" effort="100" velocity="1.0"/>
+        <dynamics damping="10.0" friction="1.0"/>
+    </joint>
+
+    <!-- Bogie Joints (revolute - connects to rear of rocker) -->
+    <joint name="left_bogie_joint" type="revolute">
+        <parent link="left_rocker"/>
+        <child link="left_bogie"/>
+        <origin xyz="${-rocker_length/2 - 0.130} 0 -0.155" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-0.3" upper="0.3" effort="50" velocity="1.0"/>
+        <dynamics damping="5.0" friction="0.5"/>
+    </joint>
+
+    <joint name="right_bogie_joint" type="revolute">
+        <parent link="right_rocker"/>
+        <child link="right_bogie"/>
+        <origin xyz="${-rocker_length/2 - 0.130} 0 -0.155" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <limit lower="-0.3" upper="0.3" effort="50" velocity="1.0"/>
+        <dynamics damping="5.0" friction="0.5"/>
+    </joint>
+
+    <!-- ============================================== -->
+    <!-- WHEELS - Rocker-Bogie Configuration          -->
+    <!-- ============================================== -->
+
+    <!-- Wheel macro definition -->
+    <xacro:macro name="jaska_wheel" params="wheel_prefix parent_link wheel_offset_x wheel_offset_y wheel_offset_z">
+
+        <!-- Wheel Link -->
+        <link name="${wheel_prefix}_wheel">
+            <visual>
+                <origin xyz="0 0 0" rpy="${wheel_mesh_rpy}"/>
+                <geometry>
+                    <mesh filename="package://jaska_description/meshes/jaska_v1/wheel.stl" scale="${wheel_mesh_scale}"/>
+                </geometry>
+                <material name="wheel_black">
+                    <color rgba="0.1 0.1 0.1 1.0"/>
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="${M_PI/2} 0 0"/>
+                <geometry>
+                    <!-- Simplified collision geometry for better physics performance -->
+                    <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+                </geometry>
+            </collision>
+            <inertial>
+                <mass value="${wheel_mass}"/>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <inertia
+                    ixx="${wheel_mass*(3*wheel_radius*wheel_radius + wheel_width*wheel_width)/12}"
+                    ixy="0"
+                    ixz="0"
+                    iyy="${wheel_mass*wheel_radius*wheel_radius/2}"
+                    iyz="0"
+                    izz="${wheel_mass*(3*wheel_radius*wheel_radius + wheel_width*wheel_width)/12}"/>
+            </inertial>
+        </link>
+
+        <!-- Wheel Joint (continuous for driving) -->
+        <joint name="${wheel_prefix}_wheel_joint" type="continuous">
+            <parent link="${parent_link}"/>
+            <child link="${wheel_prefix}_wheel"/>
+            <origin xyz="${wheel_offset_x} ${wheel_offset_y} ${wheel_offset_z}" rpy="0 0 0"/>
+            <axis xyz="0 1 0"/>
+            <dynamics damping="0.1" friction="0.1"/>
+        </joint>
+
+        <!-- Transmission for ros2_control -->
+        <transmission name="${wheel_prefix}_wheel_transmission">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="${wheel_prefix}_wheel_joint">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            </joint>
+            <actuator name="${wheel_prefix}_wheel_motor">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+
+    </xacro:macro>
+
+    <!-- Front Wheels (on rockers) -->
+    <xacro:jaska_wheel
+        wheel_prefix="front_left"
+        parent_link="left_rocker"
+        wheel_offset_x="${rocker_length/2 + 0.120}"
+        wheel_offset_y="0.060"
+        wheel_offset_z="-0.260" />
+
+    <xacro:jaska_wheel
+        wheel_prefix="front_right"
+        parent_link="right_rocker"
+        wheel_offset_x="${rocker_length/2 + 0.120}"
+        wheel_offset_y="-0.060"
+        wheel_offset_z="-0.260" />
+
+    <!-- Middle Wheels (on front of bogies) -->
+    <xacro:jaska_wheel
+        wheel_prefix="middle_left"
+        parent_link="left_bogie"
+        wheel_offset_x="${bogie_length/2 + 0.050}"
+        wheel_offset_y="0.060"
+        wheel_offset_z="-0.110" />
+
+    <xacro:jaska_wheel
+        wheel_prefix="middle_right"
+        parent_link="right_bogie"
+        wheel_offset_x="${bogie_length/2 + 0.050}"
+        wheel_offset_y="-0.060"
+        wheel_offset_z="-0.110" />
+
+    <!-- Rear Wheels (on rear of bogies) -->
+    <xacro:jaska_wheel
+        wheel_prefix="rear_left"
+        parent_link="left_bogie"
+        wheel_offset_x="${-bogie_length/2 - 0.050}"
+        wheel_offset_y="0.060"
+        wheel_offset_z="-0.110" />
+
+    <xacro:jaska_wheel
+        wheel_prefix="rear_right"
+        parent_link="right_bogie"
+        wheel_offset_x="${-bogie_length/2 - 0.050}"
+        wheel_offset_y="-0.060"
+        wheel_offset_z="-0.110" />
+
+    <!-- Differential drive constraint: synchronize left and right wheels -->
+    <!-- This will be handled by the robot controller, not URDF -->
+
+    <!-- ============================================== -->
+    <!-- SENSOR MOUNT ASSEMBLY - 45 Degree Front Mount -->
+    <!-- ============================================== -->
+
+    <!-- Sensor Mount Base (using actual STL mesh) -->
+    <link name="sensor_mount_base">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/lidar_and_camera_mount.stl" scale="${sensor_mount_mesh_scale}"/>
+            </geometry>
+            <material name="mount_aluminum">
+                <color rgba="0.7 0.7 0.7 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/lidar_and_camera_mount.stl" scale="${sensor_mount_mesh_scale}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="0.5"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.007" ixy="0" ixz="0" iyy="0.002" iyz="0" izz="0.007"/>
+        </inertial>
+    </link>
+
+    <!-- Sensor Mount Base Joint (fixed, 45-degree angle at front) -->
+    <joint name="sensor_mount_base_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="sensor_mount_base"/>
+        <!-- Position at front of robot, angled 45 degrees -->
+        <origin xyz="${sensor_mount_x} ${sensor_mount_y} ${sensor_mount_z}"
+                rpy="0 ${-sensor_mount_angle} 0"/>
+    </joint>
+
+    <!-- ============================================== -->
+    <!-- UNITREE L2 LIDAR                              -->
+    <!-- ============================================== -->
+
+    <!-- Unitree L2 Lidar Link (actual sensor) -->
+    <link name="unitree_lidar_link">
+        <visual>
+            <origin xyz="-0.037 -0.037 -0.025" rpy="0 0 0" />
+            <geometry>
+                <!-- Use actual Unitree L2 mesh from local meshes directory -->
+                <mesh filename="package://jaska_description/meshes/jaska_v1/unitree_l2.stl" scale="${lidar_mesh_scale}"/>
+            </geometry>
+            <material name="lidar_sensor">
+                <color rgba="0.1 0.1 0.1 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <!-- Simplified collision geometry: approx 90mm diameter, 60mm height -->
+                <cylinder radius="0.038" length="0.060"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="0.18"/>  <!-- Unitree L2 is approximately 180g -->
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+        </inertial>
+    </link>
+
+    <!-- Unitree L2 Lidar Joint (mounted on top mounting point of sensor mount) -->
+    <joint name="unitree_lidar_joint" type="fixed">
+        <parent link="sensor_mount_base"/>
+        <child link="unitree_lidar_link"/>
+        <!-- Adjust these coordinates based on actual mounting point position on your STL -->
+        <origin xyz="0.010 0.042 0.135" rpy="0 ${sensor_mount_angle} 0"/>
+    </joint>
+
+    <!-- Unitree L2 Lidar Optical Frame (matches real hardware frame name) -->
+    <link name="unilidar_lidar"/>
+
+    <joint name="unitree_lidar_optical_joint" type="fixed">
+        <parent link="unitree_lidar_link"/>
+        <child link="unilidar_lidar"/>
+        <!-- Lidar optical frame at sensor center -->
+        <origin xyz="0 0 0.030" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Gazebo 3D Lidar Sensor Plugin for Unitree L2 -->
+    <gazebo reference="unitree_lidar_link">
+        <material>Gazebo/Black</material>
+
+        <sensor name="unitree_l2_lidar" type="gpu_lidar">
+            <pose>0 0 0.030 0 0 0</pose>
+            <always_on>true</always_on>
+            <visualize>true</visualize>
+            <update_rate>10</update_rate>
+            <topic>unilidar/cloud</topic>
+            <gz_frame_id>unilidar_lidar</gz_frame_id>
+            <lidar>
+                <scan>
+                    <horizontal>
+                        <samples>1800</samples>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                        <resolution>1.0</resolution>
+                    </horizontal>
+                    <vertical>
+                        <samples>32</samples>
+                        <min_angle>-0.1047</min_angle>  <!-- -6 degrees (downward) -->
+                        <max_angle>1.5708</max_angle>   <!-- +90 degrees (upward dome) -->
+                        <resolution>1.0</resolution>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>30.0</max>  <!-- Unitree L2 max range -->
+                    <resolution>0.01</resolution>
+                </range>
+                <noise>
+                    <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.01</stddev>
+                </noise>
+            </lidar>
+        </sensor>
+    </gazebo>
+
+    <!-- ============================================== -->
+    <!-- ZED X CAMERA - Simplified from ZED ROS2 Wrapper -->
+    <!-- ============================================== -->
+
+    <!-- ZED X Camera Properties (from official zed_macro.urdf.xacro) -->
+    <xacro:property name="zedx_baseline" value="0.12" />        <!-- 120mm stereo baseline -->
+    <xacro:property name="zedx_height" value="0.032" />         <!-- Camera height -->
+    <xacro:property name="zedx_optical_offset_x" value="-0.01" /> <!-- Optical center offset -->
+
+    <!-- Camera mounting point -->
+    <link name="zed_camera_link" />
+
+    <!-- Camera Center -->
+    <link name="zed_camera_center">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/zedx.stl" scale="${camera_mesh_scale}"/>
+            </geometry>
+            <material name="zedx_mat">
+                <color rgba="0.1 0.1 0.1 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://jaska_description/meshes/jaska_v1/zedx.stl" scale="${camera_mesh_scale}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="0.15"/>  <!-- ZED X is approximately 150g -->
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0003" iyz="0" izz="0.0003"/>
+        </inertial>
+    </link>
+
+    <joint name="zed_camera_center_joint" type="fixed">
+        <parent link="zed_camera_link"/>
+        <child link="zed_camera_center"/>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
+
+    <!-- Mount camera link to sensor mount -->
+    <joint name="zed_camera_mount_joint" type="fixed">
+        <parent link="sensor_mount_base"/>
+        <child link="zed_camera_link"/>
+        <!-- Adjust these coordinates based on actual mounting point position on your STL -->
+        <origin xyz="0.130 0.042 0.060" rpy="0 ${sensor_mount_angle} 0"/>
+    </joint>
+
+    <!-- Left Camera -->
+    <link name="zed_left_camera_frame"/>
+
+    <joint name="zed_left_camera_joint" type="fixed">
+        <parent link="zed_camera_center"/>
+        <child link="zed_left_camera_frame"/>
+        <origin xyz="${zedx_optical_offset_x} ${zedx_baseline/2} 0" rpy="0 0 0" />
+    </joint>
+
+    <link name="zed_left_camera_optical_frame"/>
+
+    <joint name="zed_left_camera_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
+        <parent link="zed_left_camera_frame"/>
+        <child link="zed_left_camera_optical_frame"/>
+    </joint>
+
+    <!-- Right Camera -->
+    <link name="zed_right_camera_frame"/>
+
+    <joint name="zed_right_camera_joint" type="fixed">
+        <parent link="zed_camera_center"/>
+        <child link="zed_right_camera_frame"/>
+        <origin xyz="${zedx_optical_offset_x} ${-zedx_baseline/2} 0" rpy="0 0 0" />
+    </joint>
+
+    <link name="zed_right_camera_optical_frame"/>
+
+    <joint name="zed_right_camera_optical_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="${-M_PI/2} 0.0 ${-M_PI/2}"/>
+        <parent link="zed_right_camera_frame"/>
+        <child link="zed_right_camera_optical_frame"/>
+    </joint>
+
+</robot>
