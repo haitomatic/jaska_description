@@ -561,7 +561,7 @@ def Xform "jaska_v2" (
                 custom double inputs:maxAngularAcceleration
                 custom double inputs:maxAngularSpeed = 2
                 custom double inputs:maxDeceleration
-                custom double inputs:maxLinearSpeed = 1
+                custom double inputs:maxLinearSpeed = 3
                 custom double inputs:maxWheelSpeed
                 custom double inputs:wheelDistance = 0.6
                 custom double inputs:wheelRadius = 0.11
