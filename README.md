@@ -126,7 +126,7 @@ This will:
   ```
 
 - **`use_sim_time`** (default: `false`)
-  - `true`: Use simulation time (for Gazebo integration)
+  - `true`: Use simulation time (Isaac Sim publishes `/clock`)
   - `false`: Use system time
 
   ```bash
@@ -216,32 +216,11 @@ The robot description is compatible with the ZED ROS2 wrapper. The camera frames
 
 The lidar frame `unitree_lidar_link` and `unitree_lidar_optical_frame` are ready for integration with the Unitree L2 lidar ROS2 driver.
 
-### Gazebo Simulation
+### Lidar URDF plugin note
 
-The Unitree L2 lidar includes a Gazebo `gpu_lidar` sensor plugin for 3D point cloud simulation:
+The Unitree L2 lidar link includes a `<gazebo>` sensor tag in the URDF with `gpu_lidar` plugin specs. This is **not used** — jaska_v2 runs exclusively in Isaac Sim, not Gazebo. The tag is retained for reference only.
 
-**Specifications:**
-- **Type**: 3D GPU-accelerated lidar
-- **Range**: 0.1m to 30m (Unitree L2 spec)
-- **Horizontal FOV**: 360° (1800 samples)
-- **Vertical FOV**: 96° total (-6° to +90°, asymmetric dome)
-  - Upward: 90° (dome-shaped coverage above)
-  - Downward: 6° (slight coverage below horizon)
-- **Vertical beams**: 32 scan lines
-- **Update rate**: 10 Hz
-- **Topic**: `/lidar/points` (sensor_msgs/PointCloud2)
-- **Frame**: `unitree_lidar_optical_frame`
-- **Noise**: Gaussian (mean: 0.0, stddev: 0.01)
-
-**To visualize in Gazebo:**
-```bash
-ros2 launch jaska_gazebo_sim jaska_empty_world.launch.py
-```
-
-**To subscribe to point cloud data:**
-```bash
-ros2 topic echo /lidar/points
-```
+In Isaac Sim, lidar data is published via the **LidarPublisher Action Graph** directly to `/unilidar/cloud`.
 
 **To visualize in RViz2:**
 1. Add → PointCloud2
